@@ -110,7 +110,9 @@ module Sidekiq
             if siblings_descendants_are_complete
               Superworker.debug "#{subjob.to_info}: Parent (#{parent.to_info}) is complete"
               descendants_are_complete(parent)
-              parent.update_attribute(:status, 'complete') if is_child_of_parallel
+              if is_child_of_parallel && !Superworker.options[:delete_subjobs_after_superjob_completes]
+                parent.update_attribute(:status, 'complete')
+              end
             end
           end
 
