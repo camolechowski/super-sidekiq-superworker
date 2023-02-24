@@ -6,7 +6,7 @@
 
     sidekiq_options :queue => 'sidekiq_superworker_test'
 
-    def perform
+    def perform(*args)
       nil
     end
   end

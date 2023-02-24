@@ -5,6 +5,16 @@ jobs:
   tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
     strategy:
       fail-fast: false
       matrix:
@@ -22,7 +32,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler: 2.2.29
+          bundler: 2.4.5
           bundler-cache: true
       - name: Unit tests
         run: bundle exec rspec
