@@ -33,6 +33,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler: 2.4.5
-          bundler-cache: false
+          bundler-cache: true
+          cache-version: 1
       - name: Unit tests
         run: bundle install && bundle exec rspec
