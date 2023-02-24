@@ -22,9 +22,9 @@ jobs:
         gemfile:
           - Gemfile
           - gemfiles/rails_5_sidekiq_5.gemfile
-#          - gemfiles/rails_5_sidekiq_6.gemfile
+          - gemfiles/rails_5_sidekiq_6.gemfile
           - gemfiles/rails_6_sidekiq_5.gemfile
-#          - gemfiles/rails_6_sidekiq_6.gemfile
+          - gemfiles/rails_6_sidekiq_6.gemfile
     env:
       BUNDLE_GEMFILE: ${{ matrix.gemfile }}
     steps:
