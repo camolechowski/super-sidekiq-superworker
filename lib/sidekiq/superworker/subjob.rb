@@ -23,7 +23,7 @@ module Sidekiq
         end
 
         def find_by_jid(jid)
-          hash = Sidekiq.redis do |conn|
+          hash = redis_connection do |conn|
             conn.hgetall("#{redis_prefix}:#{jid}")
           end
           return nil if hash.blank?
@@ -40,7 +40,7 @@ module Sidekiq
         end
 
         def find_by_superjob_jid(jid)
-          keys = Sidekiq.redis do |conn|
+          keys = redis_connection do |conn|
             conn.smembers("#{redis_prefix}:#{jid}:subjob_keys")
           end
           keys.collect { |key| find_by_key(key) }
@@ -55,14 +55,14 @@ module Sidekiq
         end
 
         def keys
-          Sidekiq.redis do |conn|
+          redis_connection do |conn|
             keys = conn.keys("#{redis_prefix}:*:subjob_keys")
             keys.collect { |key| conn.smembers(key) }.flatten
           end
         end
 
         def delete_subjobs_for(superjob_id)
-          Sidekiq.redis do |conn|
+          redis_connection do |conn|
             keys = conn.smembers("#{redis_prefix}:#{superjob_id}:subjob_keys")
             conn.del(keys) if keys.any?
             conn.del("#{redis_prefix}:#{superjob_id}:subjob_keys")
@@ -70,13 +70,11 @@ module Sidekiq
         end
 
         def transaction(&block)
-          result = nil
-          Sidekiq.redis do |conn|
-            conn.multi do
-              result = yield(conn)
-            end
+          if inside_redis_transaction?
+            yield redis_connection_for_transaction
+          else
+            create_redis_multi_pipeline(&block)
           end
-          result
         end
 
         def jid(superjob_id, subjob_id)
@@ -86,6 +84,35 @@ module Sidekiq
         def redis_prefix
           Superworker.options[:subjob_redis_prefix]
         end
+
+        def create_redis_multi_pipeline(&block)
+          result = nil
+          Sidekiq.redis do |conn|
+            conn.multi do |pipeline|
+              Thread.current[:redis_connection_for_transaction] = pipeline
+              result = yield pipeline
+            end
+          end
+          result
+        ensure
+          Thread.current[:redis_connection_for_transaction] = nil
+        end
+
+        def inside_redis_transaction?
+          redis_connection_for_transaction.present?
+        end
+
+        def redis_connection_for_transaction
+          Thread.current[:redis_connection_for_transaction]
+        end
+
+        def redis_connection(&block)
+          if (connection = redis_connection_for_transaction)
+            yield connection
+          else
+            Sidekiq.redis(&block)
+          end
+        end
       end
 
       def initialize(params={})
@@ -93,8 +120,8 @@ module Sidekiq
           params.each do |attribute, value|
             public_send("#{attribute}=", value)
           end
-          Sidekiq.redis do |conn|
-            conn.sadd("#{self.class.redis_prefix}:#{superjob_id}:subjob_keys", "#{self.class.redis_prefix}:#{superjob_id}:#{subjob_id}")
+          self.class.redis_connection do |conn|
+            add_subjob_to_redis(conn)
           end
         end
       end
@@ -117,7 +144,7 @@ module Sidekiq
       def update_attribute(attribute, value)
         public_send("#{attribute.to_s}=", value)
         return false unless self.valid?
-        Sidekiq.redis do |conn|
+        self.class.redis_connection do |conn|
           conn.hset(key, attribute.to_s, value.to_json)
         end
         true
@@ -137,6 +164,10 @@ module Sidekiq
 
       def parent
         self.class.find_by_jid(self.class.jid(superjob_id, parent_id))
+      end
+
+      def add_subjob_to_redis(connection)
+        connection.sadd("#{self.class.redis_prefix}:#{superjob_id}:subjob_keys", "#{self.class.redis_prefix}:#{superjob_id}:#{subjob_id}")
       end
 
       def children
