@@ -1,5 +1,6 @@
 .DS_Store
 .bundle/
-Gemfile.lock
 log/*.log
 pkg/
+.idea/
+*.gemfile.lock
