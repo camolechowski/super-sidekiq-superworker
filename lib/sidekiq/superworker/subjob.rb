@@ -85,6 +85,16 @@ module Sidekiq
           Superworker.options[:subjob_redis_prefix]
         end
 
+        def redis_connection(&block)
+          if (connection = redis_connection_for_transaction)
+            yield connection
+          else
+            Sidekiq.redis(&block)
+          end
+        end
+
+        private
+
         def create_redis_multi_pipeline(&block)
           result = nil
           Sidekiq.redis do |conn|
@@ -104,14 +114,6 @@ module Sidekiq
 
         def redis_connection_for_transaction
           Thread.current[:redis_connection_for_transaction]
-        end
-
-        def redis_connection(&block)
-          if (connection = redis_connection_for_transaction)
-            yield connection
-          else
-            Sidekiq.redis(&block)
-          end
         end
       end
 
