@@ -2,16 +2,16 @@ PATH
   remote: .
   specs:
     sidekiq-superworker (1.2.3)
-      activemodel (>= 5.0, < 7)
-      activesupport (>= 5.0, < 7)
-      sidekiq (>= 5.0, < 7)
+      activemodel (>= 6.0)
+      activesupport (>= 6.0)
+      sidekiq (>= 6.0, < 7)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    activemodel (6.1.7.2)
-      activesupport (= 6.1.7.2)
-    activesupport (6.1.7.2)
+    activemodel (6.1.7.8)
+      activesupport (= 6.1.7.8)
+    activesupport (6.1.7.8)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
@@ -21,6 +21,8 @@ GEM
       bundler
       rake
       thor (>= 0.14.0)
+    appraisal-matrix (0.2.0)
+      appraisal (~> 2.2)
     coderay (1.1.3)
     concurrent-ruby (1.2.0)
     connection_pool (2.3.0)
@@ -32,9 +34,7 @@ GEM
     pry (0.14.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    rack (2.2.6.2)
-    rack-protection (3.0.5)
-      rack
+    rack (2.2.9)
     rake (13.0.6)
     redis (4.5.1)
     rspec (3.12.0)
@@ -50,11 +50,10 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
     rspec-support (3.12.0)
-    sidekiq (5.2.10)
-      connection_pool (~> 2.2, >= 2.2.2)
+    sidekiq (6.5.12)
+      connection_pool (>= 2.2.5, < 3)
       rack (~> 2.0)
-      rack-protection (>= 1.5.0)
-      redis (~> 4.5, < 4.6.0)
+      redis (>= 4.5.0, < 5)
     thor (1.2.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
@@ -66,6 +65,7 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal
+  appraisal-matrix
   pry
   rake
   rspec (~> 3.12)

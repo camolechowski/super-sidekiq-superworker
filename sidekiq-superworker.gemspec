@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.license       = 'MIT'
   s.metadata["allowed_push_host"] = "https://gem.fury.io/invoca"
 
-  s.add_dependency 'sidekiq', '>= 5.0', '< 7'
-  s.add_dependency 'activesupport', '>= 5.0', '< 7'
-  s.add_dependency 'activemodel', '>= 5.0', '< 7'
+  s.add_dependency 'sidekiq', '>= 6.0', '< 7'
+  s.add_dependency 'activesupport', '>= 6.0'
+  s.add_dependency 'activemodel', '>= 6.0'
 end
