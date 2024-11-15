@@ -132,7 +132,7 @@ module Sidekiq
         return false unless self.valid?
 
         self.class.transaction do |conn|
-          conn.mapped_hmset(key, to_param)
+          conn.hmset(key, to_param)
           conn.expire(key,Superworker.options[:superjob_expiration]) if Superworker.options[:superjob_expiration]
         end
         true
