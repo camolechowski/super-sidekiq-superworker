@@ -132,8 +132,12 @@ module Sidekiq
         return false unless self.valid?
 
         self.class.transaction do |conn|
-          conn.hmset(key, to_param)
-          conn.expire(key,Superworker.options[:superjob_expiration]) if Superworker.options[:superjob_expiration]
+          conn.pipelined do |pipeline|
+            to_param.each do |field, value|
+              pipeline.hset(key, field, value)
+            end
+            pipeline.expire(key, Superworker.options[:superjob_expiration]) if Superworker.options[:superjob_expiration]
+          end
         end
         true
       end
